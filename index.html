@@ -200,6 +200,10 @@ th { color: var(--text-2); font-weight: 500; }
 .foot { margin-top: 28px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .sign { text-align: center; color: var(--text-3); font-size: 12px; margin-top: 10px; }
 .sign .leaf { color: var(--plant); }
+.bk-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; background: var(--brown-bg); border: 1px solid var(--brass); border-radius: 14px; padding: 12px 14px; box-shadow: var(--shadow); font-size: 14.5px; }
+.bk-banner[hidden] { display: none; }
+.bk-banner .bk-tx { flex: 1 1 200px; color: var(--text); }
+.bk-banner .bk-act { display: flex; gap: 6px; margin-left: auto; }
 </style>
 </head>
 <body>
@@ -221,6 +225,14 @@ th { color: var(--text-2); font-weight: 500; }
 <div class="wood" aria-hidden="true"></div>
 
 <div class="page">
+  <div class="bk-banner" id="bkBanner" role="status" hidden>
+    <span class="bk-ic" aria-hidden="true">🗂️</span>
+    <span class="bk-tx" id="bkMsg"></span>
+    <span class="bk-act">
+      <button class="btn small primary" id="bkNow" type="button">지금 백업하기</button>
+      <button class="btn small ghost" id="bkLater" type="button">내일 다시</button>
+    </span>
+  </div>
   <section class="blk">
     <h2><span class="no">0</span>오늘 기록하기</h2>
     <p class="note">* 집중도 및 피로감, 수면 만족도는 10점 만점 기준으로 점수 부여할 것, 수면 반응은 다음날 아침기상 기준으로 기록하시오.</p>
@@ -289,9 +301,10 @@ th { color: var(--text-2); font-weight: 500; }
 
   <div class="foot">
     <button class="btn small" id="export">기록 내보내기 (백업)</button>
-    <label class="btn small" style="display:inline-flex;align-items:center">기록 불러오기<input type="file" id="import" accept="application/json" hidden></label>
+    <label class="btn small" style="display:inline-flex;align-items:center">기록 불러오기<input type="file" id="import" accept=".json,.txt,application/json,text/plain" hidden></label>
   </div>
-  <p class="sign">기록은 이 기기에 저장돼요 · 다른 기기로 옮길 땐 내보내기/불러오기 <span class="leaf">🌿</span></p>
+  <p class="sign" id="bkInfo"></p>
+  <p class="sign">기록은 입력하는 즉시 이 기기에 자동 저장돼요 · 백업 버튼을 누르면 공유 창에서 'iCloud Drive에 저장'을 고르세요 <span class="leaf">🌿</span></p>
 </div>
 <div class="tip" id="tip"></div>
 
@@ -556,11 +569,49 @@ th { color: var(--text-2); font-weight: 500; }
   }
 
   // ---------- backup ----------
-  $('export').onclick = () => {
-    const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `커피기록-${today}.json`; a.click();
+  const BK = 'coffee-last-backup', SNOOZE = 'coffee-backup-snooze', REMIND_DAYS = 7;
+  const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+  const daysBetween = (a, b) => Math.round((parse(b) - parse(a)) / 86400000);
+  const markBackedUp = () => { lsSet(BK, today); lsSet(SNOOZE, ''); renderBackup(); };
+
+  async function doBackup() {
+    const text = JSON.stringify(db, null, 2);
+    const name = `커피기록-${today}`;
+    const title = '카페인 조절 기록지 백업';
+    // 1) 공유 창 (아이폰: 파일에 저장 · 카카오톡 · 메일 · AirDrop)
+    if (navigator.share && navigator.canShare) {
+      const candidates = [new File([text], name + '.json', { type: 'application/json' }), new File([text], name + '.txt', { type: 'text/plain' })];
+      const file = candidates.find(f => { try { return navigator.canShare({ files: [f] }); } catch (e) { return false; } });
+      if (file) {
+        try { await navigator.share({ files: [file], title }); markBackedUp(); return; }
+        catch (err) { if (err && err.name === 'AbortError') return; /* 취소 → 아무것도 안 함 */ }
+      }
+    }
+    // 2) 공유를 못 쓰는 곳(PC 등) → 파일 다운로드
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+    a.download = name + '.json'; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  };
+    markBackedUp();
+  }
+  $('export').onclick = doBackup;
+  $('bkNow').onclick = doBackup;
+  $('bkLater').onclick = () => { lsSet(SNOOZE, today); renderBackup(); };
+
+  function renderBackup() {
+    const keys = Object.keys(db).filter(k => db[k] && (db[k].cups.length || METRICS.some(m => db[k][m.key] != null))).sort();
+    const last = lsGet(BK);
+    $('bkInfo').textContent = last ? `마지막 백업: ${parse(last).getMonth() + 1}월 ${parse(last).getDate()}일 (${daysBetween(last, today)}일 전)` : '아직 백업한 적이 없어요';
+    let msg = '';
+    if (keys.length) {
+      if (!last && daysBetween(keys[0], today) >= REMIND_DAYS) msg = `기록을 시작한 지 ${daysBetween(keys[0], today)}일이 지났어요. 한 번 백업해 둘까요?`;
+      else if (last && daysBetween(last, today) >= REMIND_DAYS) msg = `마지막 백업 후 ${daysBetween(last, today)}일이 지났어요. 백업할 때가 됐어요!`;
+    }
+    const snoozed = lsGet(SNOOZE) === today;
+    $('bkMsg').textContent = msg;
+    $('bkBanner').hidden = !msg || snoozed;
+  }
   $('import').onchange = async e => {
     const f = e.target.files[0]; if (!f) return;
     try { const data = JSON.parse(await f.text()); if (confirm('불러온 기록을 지금 기록과 합칠까요? (같은 날짜는 불러온 기록으로 바뀌어요)')) { Object.assign(db, data); save(); render(); } }
@@ -568,7 +619,7 @@ th { color: var(--text-2); font-weight: 500; }
     e.target.value = '';
   };
 
-  function render() { renderForm(); renderCal(); renderWeek(); renderMonth(); }
+  function render() { renderForm(); renderCal(); renderWeek(); renderMonth(); renderBackup(); }
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
   let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(render, 150); });
   renderLegend();
