@@ -4,143 +4,189 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>카페인 조절 기록지</title>
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="#2a1d16">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="커피기록">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
 <style>
+/* Lion Heart 무드: 짙은 가죽 소파 · 월넛 원목 · 놋쇠 조명 · 초록 식물 · 크림빛 종이 */
 :root {
   color-scheme: light;
-  --bg: #ffffff;
-  --bg-soft: #f7f6f3;
-  --bg-hover: #efeeeb;
-  --line: #e9e9e7;
-  --text: #37352f;
-  --text-2: #787774;
-  --text-3: #a5a49f;
-  --brown: #9f6b53;
-  --brown-bg: #f4eeee;
-  --red: #e03e3e;
-  --red-bg: #fbe4e4;
-  --green: #0f7b6c;
-  --green-bg: #ddedea;
-  --today: #eb5757;
-  /* chart series (validated reference palette, light) */
+  --page: #efe6d8;          /* 크림 종이 */
+  --bg: #fbf7f0;            /* 카드 */
+  --bg-soft: #f4ecdf;
+  --bg-hover: #ebdfcc;
+  --line: #e0d2bd;
+  --text: #2e231c;
+  --text-2: #6f5f51;
+  --text-3: #a8988a;
+  --espresso: #2a1d16;      /* 상단 바 · 짙은 벽 */
+  --walnut: #5a3a26;
+  --leather: #8b5a3c;       /* 가죽 소파 */
+  --brass: #b08d57;         /* 놋쇠 조명 */
+  --plant: #4f6b4a;
+  --brown: #8b5a3c;
+  --brown-bg: #f1e3d3;
+  --red: #b3402e;
+  --red-bg: #f6e0d8;
+  --green: #4f6b4a;
+  --green-bg: #e3eadb;
+  --today: #b3402e;
   --s-focus: #2a78d6;
   --s-fatigue: #eb6834;
-  --s-sleep: #1baf7a;
+  --s-sleep: #4f7f52;
   --s-heart: #eda100;
-  --s-cup: #9f6b53;
-  --grid: #ecebe8;
+  --s-cup: #8b5a3c;
+  --grid: #ebe1d2;
+  --shadow: 0 1px 2px rgba(42,29,22,.06), 0 6px 20px rgba(42,29,22,.07);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
-    --bg: #191919; --bg-soft: #202020; --bg-hover: #2a2a2a; --line: #2f2f2f;
-    --text: #e6e6e4; --text-2: #9b9b98; --text-3: #6f6f6c;
-    --brown: #c49a82; --brown-bg: #3a2b24; --red: #ff7369; --red-bg: #3e2220;
-    --green: #4dab9a; --green-bg: #1f3330; --today: #eb5757;
-    --s-focus: #3987e5; --s-fatigue: #d95926; --s-sleep: #199e70; --s-heart: #c98500;
-    --s-cup: #b5876f; --grid: #2c2c2c;
+    --page: #17110d; --bg: #221a15; --bg-soft: #2a211b; --bg-hover: #352920; --line: #3a2e25;
+    --text: #efe4d3; --text-2: #b9a893; --text-3: #7d6d5e;
+    --espresso: #120c09; --walnut: #c49a74; --leather: #c18a64; --brass: #c9a46b; --plant: #8fae86;
+    --brown: #c18a64; --brown-bg: #3a2a1f; --red: #e8806b; --red-bg: #3d231c;
+    --green: #8fae86; --green-bg: #243022; --today: #c9563f;
+    --s-focus: #3987e5; --s-fatigue: #d95926; --s-sleep: #6f9e6a; --s-heart: #c98500;
+    --s-cup: #b07b56; --grid: #2f251e;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.25);
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #191919; --bg-soft: #202020; --bg-hover: #2a2a2a; --line: #2f2f2f;
-  --text: #e6e6e4; --text-2: #9b9b98; --text-3: #6f6f6c;
-  --brown: #c49a82; --brown-bg: #3a2b24; --red: #ff7369; --red-bg: #3e2220;
-  --green: #4dab9a; --green-bg: #1f3330; --today: #eb5757;
-  --s-focus: #3987e5; --s-fatigue: #d95926; --s-sleep: #199e70; --s-heart: #c98500;
-  --s-cup: #b5876f; --grid: #2c2c2c;
+  --page: #17110d; --bg: #221a15; --bg-soft: #2a211b; --bg-hover: #352920; --line: #3a2e25;
+  --text: #efe4d3; --text-2: #b9a893; --text-3: #7d6d5e;
+  --espresso: #120c09; --walnut: #c49a74; --leather: #c18a64; --brass: #c9a46b; --plant: #8fae86;
+  --brown: #c18a64; --brown-bg: #3a2a1f; --red: #e8806b; --red-bg: #3d231c;
+  --green: #8fae86; --green-bg: #243022; --today: #c9563f;
+  --s-focus: #3987e5; --s-fatigue: #d95926; --s-sleep: #6f9e6a; --s-heart: #c98500;
+  --s-cup: #b07b56; --grid: #2f251e;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.25);
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; }
 body {
-  background: var(--bg); color: var(--text);
-  font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-  font-size: 16px; line-height: 1.5; -webkit-text-size-adjust: 100%;
+  background: var(--page); color: var(--text);
+  font-family: "Gowun Dodum", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  font-size: 16px; line-height: 1.55; -webkit-text-size-adjust: 100%;
 }
-.page { max-width: 760px; margin: 0 auto; padding: 48px 16px 80px; }
-h1 { font-size: 34px; font-weight: 700; margin: 0 0 12px; line-height: 1.2; }
-h2 { font-size: 22px; font-weight: 700; margin: 40px 0 8px; }
-h3 { font-size: 16px; font-weight: 600; margin: 20px 0 6px; }
-p { margin: 4px 0; }
-hr { border: 0; border-top: 1px solid var(--line); margin: 16px 0; }
-.muted { color: var(--text-2); }
-.note { color: var(--brown); font-size: 14px; margin: 8px 0; }
-ul.props { margin: 6px 0; padding-left: 22px; }
-ul.props li { margin: 2px 0; }
-b { font-weight: 600; }
+.serif, h1, h2 { font-family: "Gowun Batang", "AppleMyungjo", "Batang", serif; }
 
-/* card / form */
-.card { border: 1px solid var(--line); border-radius: 8px; padding: 16px; margin-top: 10px; background: var(--bg); }
+/* ---- hero: 짙은 벽 + 놋쇠 펜던트 + 큰 창 ---- */
+.hero {
+  background: linear-gradient(180deg, var(--espresso) 0%, #3a281d 100%);
+  color: #f3e7d3; padding: calc(env(safe-area-inset-top) + 20px) 16px 0; position: relative; overflow: hidden;
+}
+.hero-in { max-width: 760px; margin: 0 auto; position: relative; }
+.lamps { display: flex; justify-content: space-around; height: 64px; margin: 0 8%; pointer-events: none; }
+.lamp { position: relative; width: 2px; background: #6b5641; }
+.lamp:nth-child(1) { height: 34px; } .lamp:nth-child(2) { height: 50px; } .lamp:nth-child(3) { height: 28px; }
+.lamp::after { content: ""; position: absolute; bottom: -12px; left: -15px; width: 32px; height: 14px; border-radius: 16px 16px 4px 4px; background: linear-gradient(180deg, #d8b878, #a07a42); }
+.lamp::before { content: ""; position: absolute; bottom: -70px; left: -60px; width: 122px; height: 70px; background: radial-gradient(ellipse at top, rgba(240,200,130,.22), transparent 70%); }
+.brand { text-align: center; padding: 18px 0 26px; }
+.brand .eyebrow { letter-spacing: .32em; font-size: 11px; color: var(--brass); text-transform: uppercase; }
+.brand h1 { font-size: 32px; margin: 6px 0 4px; font-weight: 700; color: #f6ead6; letter-spacing: -.01em; }
+.brand .sub { font-size: 13px; color: #c7b49a; }
+.goal {
+  max-width: 760px; margin: 0 auto; background: rgba(255,255,255,.05); border: 1px solid rgba(201,164,107,.35);
+  border-radius: 14px 14px 0 0; border-bottom: 0; padding: 14px 18px 16px; font-size: 14.5px; color: #eadcc5;
+}
+.goal b { color: #f6ead6; }
+.goal .gl { display: flex; gap: 10px; align-items: baseline; margin: 3px 0; }
+.goal .gl span:first-child { width: 20px; text-align: center; flex: none; }
+
+/* wood strip under hero */
+.wood { height: 10px; background: repeating-linear-gradient(90deg, #5a3a26 0 38px, #6a4630 38px 70px, #553623 70px 120px); box-shadow: inset 0 -2px 0 rgba(0,0,0,.25); }
+
+.page { max-width: 760px; margin: 0 auto; padding: 20px 16px calc(env(safe-area-inset-bottom) + 64px); }
+section.blk { background: var(--bg); border: 1px solid var(--line); border-radius: 16px; padding: 18px 16px 16px; margin-top: 18px; box-shadow: var(--shadow); }
+h2 { font-size: 20px; font-weight: 700; margin: 0 0 6px; display: flex; align-items: center; gap: 10px; color: var(--text); }
+h2 .no { flex: none; width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--brass); color: var(--brass); font-size: 14px; display: inline-flex; align-items: center; justify-content: center; font-family: "Gowun Batang", serif; }
+h3 { font-size: 15px; font-weight: 700; margin: 18px 0 6px; color: var(--walnut); }
+p { margin: 4px 0; }
+.muted { color: var(--text-2); }
+.note { color: var(--leather); font-size: 13.5px; margin: 4px 0 10px; }
+b { font-weight: 700; }
+
+/* form */
 .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 label.f { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--text-2); flex: 1 1 120px; min-width: 0; }
 input, select, button { font: inherit; color: inherit; }
 input[type=date], input[type=time], input[type=number], select {
-  background: var(--bg-soft); border: 1px solid var(--line); border-radius: 6px; padding: 7px 9px; width: 100%; min-height: 38px;
+  background: var(--bg-soft); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; width: 100%; min-height: 42px; font-size: 16px;
+  -webkit-appearance: none; appearance: none;
 }
-.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
-.seg button { border: 0; background: var(--bg-soft); padding: 7px 12px; cursor: pointer; min-height: 38px; }
-.seg button[aria-pressed="true"] { background: var(--brown-bg); color: var(--brown); font-weight: 600; }
-.btn { border: 1px solid var(--line); background: var(--bg-soft); border-radius: 6px; padding: 8px 14px; cursor: pointer; min-height: 38px; }
+select { background-image: linear-gradient(45deg, transparent 50%, var(--text-2) 50%), linear-gradient(135deg, var(--text-2) 50%, transparent 50%); background-position: calc(100% - 16px) 52%, calc(100% - 11px) 52%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 28px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; background: var(--bg-soft); }
+.seg button { border: 0; background: transparent; padding: 8px 16px; cursor: pointer; min-height: 42px; }
+.seg button[aria-pressed="true"] { background: var(--leather); color: #fff8ee; }
+.btn { border: 1px solid var(--line); background: var(--bg-soft); border-radius: 999px; padding: 8px 16px; cursor: pointer; min-height: 42px; }
 .btn:hover { background: var(--bg-hover); }
-.btn.primary { background: var(--brown); color: #fff; border-color: var(--brown); }
-.btn.small { padding: 4px 10px; min-height: 30px; font-size: 13px; }
+.btn.primary { background: var(--espresso); color: #f6ead6; border-color: var(--espresso); box-shadow: inset 0 -2px 0 rgba(176,141,87,.6); }
+:root[data-theme="dark"] .btn.primary { background: var(--leather); border-color: var(--leather); color: #1a120d; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary { background: var(--leather); border-color: var(--leather); color: #1a120d; } }
+.btn.small { padding: 4px 12px; min-height: 34px; font-size: 13px; }
 .btn.ghost { background: transparent; border-color: transparent; color: var(--text-2); }
 
 .cups { list-style: none; padding: 0; margin: 12px 0 0; }
-.cups li { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 15px; }
-.cups li .t { color: var(--text-2); font-variant-numeric: tabular-nums; min-width: 72px; }
+.cups li { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px dashed var(--line); font-size: 15px; }
+.cups li .t { color: var(--text-2); font-variant-numeric: tabular-nums; min-width: 74px; font-size: 13.5px; }
 .cups li .x { margin-left: auto; }
-.tag { display: inline-block; font-size: 12px; padding: 1px 7px; border-radius: 4px; background: var(--bg-hover); color: var(--text-2); }
+.tag { display: inline-block; font-size: 12px; padding: 2px 9px; border-radius: 999px; background: var(--bg-hover); color: var(--text-2); }
 .tag.warn { background: var(--red-bg); color: var(--red); }
 .tag.ok { background: var(--green-bg); color: var(--green); }
 
-.sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; margin-top: 8px; }
+.sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 22px; margin-top: 8px; }
 @media (max-width: 560px) { .sliders { grid-template-columns: 1fr; } }
 .sl label { display: flex; justify-content: space-between; font-size: 14px; }
-.sl label output { font-weight: 600; font-variant-numeric: tabular-nums; }
+.sl label output { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--leather); }
 .sl small { display: block; color: var(--text-3); font-size: 12px; }
-input[type=range] { width: 100%; accent-color: var(--brown); }
+input[type=range] { width: 100%; accent-color: var(--leather); }
 .sl.unset output { color: var(--text-3); font-weight: 400; }
-
-.summary { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.summary { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
 
 /* calendar */
-.cal-head { display: flex; align-items: center; justify-content: space-between; margin: 8px 0; }
-.cal-head .m { font-weight: 600; font-size: 14px; }
-.cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
-.cal .dow { font-size: 12px; color: var(--text-2); text-align: center; padding: 4px 0; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-.cal .d { min-height: 82px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 4px 6px; cursor: pointer; position: relative; background: var(--bg); text-align: left; border-top: 0; border-left: 0; font: inherit; color: inherit; display: flex; flex-direction: column; gap: 2px; }
+.cal-head { display: flex; align-items: center; justify-content: space-between; margin: 4px 0 8px; }
+.cal-head .m { font-weight: 700; font-size: 15px; font-family: "Gowun Batang", serif; }
+.cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.cal .dow { font-size: 12px; color: var(--text-2); text-align: center; padding: 6px 0; background: var(--bg-soft); border-bottom: 1px solid var(--line); }
+.cal .d { min-height: 80px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 4px 5px; cursor: pointer; background: var(--bg); text-align: left; border-top: 0; border-left: 0; font: inherit; color: inherit; display: flex; flex-direction: column; gap: 2px; }
+.cal .d:nth-child(7n) { border-right: 0; }
 .cal .d:hover { background: var(--bg-soft); }
 .cal .d.weekend { background: var(--bg-soft); }
 .cal .d.other { color: var(--text-3); }
-.cal .d.sel { outline: 2px solid var(--brown); outline-offset: -2px; }
+.cal .d.sel { box-shadow: inset 0 0 0 2px var(--brass); }
 .cal .num { font-size: 13px; text-align: right; align-self: flex-end; line-height: 22px; min-width: 22px; }
 .cal .d.today .num { background: var(--today); color: #fff; border-radius: 50%; text-align: center; width: 22px; height: 22px; }
-.cal .ev { font-size: 12px; background: var(--bg-hover); border-radius: 4px; padding: 1px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cal .ev { font-size: 12px; background: var(--brown-bg); color: var(--leather); border-radius: 6px; padding: 1px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cal .ev.warn { background: var(--red-bg); color: var(--red); }
 .cal .ev.sleep { background: var(--green-bg); color: var(--green); }
-@media (max-width: 560px) { .cal .d { min-height: 64px; padding: 2px 3px; } .cal .ev { font-size: 10px; padding: 0 2px; } }
+@media (max-width: 560px) { .cal .d { min-height: 62px; padding: 2px 3px; } .cal .ev { font-size: 10px; padding: 0 2px; } }
 
 /* charts */
-.charts3 { display: grid; grid-template-columns: 1fr; gap: 8px; }
+.charts3 { display: grid; grid-template-columns: 1fr; gap: 4px; }
 .chart { position: relative; }
 .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
 .chart .axis text, .chart text.lab { fill: var(--text-2); font-size: 11px; font-variant-numeric: tabular-nums; }
-.chart text.val { fill: var(--text); font-size: 11px; font-weight: 600; }
+.chart text.val { fill: var(--text); font-size: 11px; font-weight: 700; }
 .chart .gridl { stroke: var(--grid); stroke-width: 1; }
 .chart .goal { stroke: var(--red); stroke-width: 1.5; stroke-dasharray: 4 3; }
-.chart .goal-t { fill: var(--red); font-size: 11px; }
 .chart .hit { fill: transparent; cursor: pointer; }
 .chart .xh { stroke: var(--text-3); stroke-width: 1; }
 .legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px; color: var(--text-2); margin: 4px 0 6px; }
 .legend button { border: 0; background: none; padding: 2px 0; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; color: inherit; font: inherit; }
 .legend button[aria-pressed="false"] { opacity: .4; }
 .legend i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
-.tip { position: fixed; pointer-events: none; background: var(--bg); border: 1px solid var(--line); box-shadow: 0 4px 14px rgba(0,0,0,.12); border-radius: 6px; padding: 6px 9px; font-size: 12px; z-index: 50; display: none; min-width: 120px; }
-.tip .h { font-weight: 600; margin-bottom: 2px; }
+.tip { position: fixed; pointer-events: none; background: var(--bg); border: 1px solid var(--line); box-shadow: var(--shadow); border-radius: 10px; padding: 7px 10px; font-size: 12px; z-index: 50; display: none; min-width: 130px; color: var(--text); }
+.tip .h { font-weight: 700; margin-bottom: 2px; }
 .tip .r { display: flex; align-items: center; gap: 6px; justify-content: space-between; }
 .tip .r span:first-child { display: inline-flex; align-items: center; gap: 6px; color: var(--text-2); }
 .tip i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
@@ -151,26 +197,38 @@ th, td { border-bottom: 1px solid var(--line); padding: 4px 6px; text-align: rig
 th:first-child, td:first-child { text-align: left; }
 th { color: var(--text-2); font-weight: 500; }
 .tblwrap { overflow-x: auto; }
-.foot { margin-top: 48px; display: flex; gap: 8px; flex-wrap: wrap; }
+.foot { margin-top: 28px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.sign { text-align: center; color: var(--text-3); font-size: 12px; margin-top: 10px; }
+.sign .leaf { color: var(--plant); }
 </style>
 </head>
 <body>
+<header class="hero">
+  <div class="hero-in">
+    <div class="lamps" aria-hidden="true"><span class="lamp"></span><span class="lamp"></span><span class="lamp"></span></div>
+    <div class="brand">
+      <div class="eyebrow">Hand Drip · Caffeine Journal</div>
+      <h1>☕ 카페인 조절 기록지</h1>
+      <div class="sub">오늘의 한 잔을 천천히, 기록으로 남겨요</div>
+    </div>
+    <div class="goal">
+      <div class="gl"><span>💡</span><span><b>목표:</b> 일일 카페인 최대 2잔 이하로 조절하기</span></div>
+      <div class="gl"><span>🕒</span><span>오후 3시 이후에는 마시지 않기</span></div>
+      <div class="gl"><span>🍵</span><span>어려운 경우 티로 대체</span></div>
+    </div>
+  </div>
+</header>
+<div class="wood" aria-hidden="true"></div>
+
 <div class="page">
-  <h1>☕ 카페인 조절 기록지</h1>
-  <p>💡 <b>목표:</b> 일일 카페인 최대 2잔 이하로 조절하기</p>
-  <p>오후 3시 이후에는 마시지 않기,</p>
-  <p>( 어려운 경우 🍵티로 대체)</p>
-  <hr>
-
-  <h2>0. 오늘 기록하기</h2>
-  <p class="note">* 집중도 및 피로감, 수면 만족도는 10점 만점 기준으로 점수 부여할 것, 수면 반응은 다음날 아침기상 기준으로 기록하시오.</p>
-
-  <div class="card">
+  <section class="blk">
+    <h2><span class="no">0</span>오늘 기록하기</h2>
+    <p class="note">* 집중도 및 피로감, 수면 만족도는 10점 만점 기준으로 점수 부여할 것, 수면 반응은 다음날 아침기상 기준으로 기록하시오.</p>
     <div class="row">
       <label class="f" style="flex:0 1 200px">날짜
         <input type="date" id="date">
       </label>
-      <div id="dayname" class="muted" style="align-self:flex-end;padding-bottom:8px"></div>
+      <div id="dayname" class="muted" style="align-self:flex-end;padding-bottom:10px"></div>
     </div>
 
     <h3>커피 한 잔 추가</h3>
@@ -195,39 +253,45 @@ th { color: var(--text-2); font-weight: 500; }
 
     <h3>오늘의 상태 <span class="muted" style="font-weight:400;font-size:13px">(0~10점)</span></h3>
     <div class="sliders" id="sliders"></div>
-  </div>
+  </section>
 
-  <h2>1. 월•일 카페인 섭취 기록</h2>
-  <div class="cal-head">
-    <span class="m" id="calTitle"></span>
-    <span>
-      <button class="btn small ghost" id="prev" aria-label="이전 달">‹</button>
-      <button class="btn small ghost" id="todayBtn">오늘</button>
-      <button class="btn small ghost" id="next" aria-label="다음 달">›</button>
-    </span>
-  </div>
-  <div class="cal" id="cal"></div>
+  <section class="blk">
+    <h2><span class="no">1</span>월•일 카페인 섭취 기록</h2>
+    <div class="cal-head">
+      <span class="m" id="calTitle"></span>
+      <span>
+        <button class="btn small ghost" id="prev" aria-label="이전 달">‹</button>
+        <button class="btn small ghost" id="todayBtn">오늘</button>
+        <button class="btn small ghost" id="next" aria-label="다음 달">›</button>
+      </span>
+    </div>
+    <div class="cal" id="cal"></div>
+  </section>
 
-  <h2>2. 일주일 카페인 섭취 그래프</h2>
-  <p class="muted" id="weekRange" style="font-size:14px"></p>
-  <div class="charts3">
-    <div><h3>☕ 하루 잔 수 <span style="color:var(--red);font-weight:400;font-size:13px">┄ 목표 2잔</span></h3><div class="chart" id="wCups"></div></div>
-    <div><h3>🥤 하루 섭취량 (ml)</h3><div class="chart" id="wMl"></div></div>
-    <div><h3>😴 전날 수면 반응 (10점)</h3><div class="chart" id="wSleep"></div></div>
-  </div>
-  <details class="tbl"><summary>표로 보기</summary><div class="tblwrap" id="wTable"></div></details>
+  <section class="blk">
+    <h2><span class="no">2</span>일주일 카페인 섭취 그래프</h2>
+    <p class="muted" id="weekRange" style="font-size:13.5px"></p>
+    <div class="charts3">
+      <div><h3>☕ 하루 잔 수 <span style="color:var(--red);font-weight:400;font-size:13px">┄ 목표 2잔</span></h3><div class="chart" id="wCups"></div></div>
+      <div><h3>🥤 하루 섭취량 (ml)</h3><div class="chart" id="wMl"></div></div>
+      <div><h3>😴 전날 수면 반응 (10점)</h3><div class="chart" id="wSleep"></div></div>
+    </div>
+    <details class="tbl"><summary>표로 보기</summary><div class="tblwrap" id="wTable"></div></details>
+  </section>
 
-  <h2>3. 한 달 수행도 그래프</h2>
-  <p class="muted" id="monthRange" style="font-size:14px"></p>
-  <div class="legend" id="legend"></div>
-  <div class="chart" id="mLine"></div>
-  <details class="tbl"><summary>표로 보기</summary><div class="tblwrap" id="mTable"></div></details>
+  <section class="blk">
+    <h2><span class="no">3</span>한 달 수행도 그래프</h2>
+    <p class="muted" id="monthRange" style="font-size:13.5px"></p>
+    <div class="legend" id="legend"></div>
+    <div class="chart" id="mLine"></div>
+    <details class="tbl"><summary>표로 보기</summary><div class="tblwrap" id="mTable"></div></details>
+  </section>
 
   <div class="foot">
     <button class="btn small" id="export">기록 내보내기 (백업)</button>
     <label class="btn small" style="display:inline-flex;align-items:center">기록 불러오기<input type="file" id="import" accept="application/json" hidden></label>
   </div>
-  <p class="muted" style="font-size:12px;margin-top:8px">기록은 이 기기의 브라우저에 저장돼요. 다른 기기로 옮길 땐 내보내기/불러오기를 쓰세요.</p>
+  <p class="sign">기록은 이 기기에 저장돼요 · 다른 기기로 옮길 땐 내보내기/불러오기 <span class="leaf">🌿</span></p>
 </div>
 <div class="tip" id="tip"></div>
 
@@ -326,7 +390,7 @@ th { color: var(--text-2); font-weight: 500; }
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'd' + (dt.getMonth() !== mo ? ' other' : '') + (dt.getDay() % 6 === 0 ? ' weekend' : '') + (k === today ? ' today' : '') + (k === sel ? ' sel' : '');
-      const label = dt.getDate() === 1 ? `${dt.getMonth() + 1}월 1일` : dt.getDate();
+      const label = dt.getDate() === 1 ? `${dt.getMonth() + 1}/1` : dt.getDate();
       let html = `<span class="num">${label}</span>`;
       const n = d.cups.length;
       if (n) {
