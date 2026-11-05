@@ -225,6 +225,10 @@ th { color: var(--text-2); font-weight: 500; }
 <div class="wood" aria-hidden="true"></div>
 
 <div class="page">
+  <div class="bk-banner" id="rmBanner" role="status" hidden style="margin-bottom:10px">
+    <span class="bk-ic" aria-hidden="true">⏰</span>
+    <span class="bk-tx" id="rmMsg"></span>
+  </div>
   <div class="bk-banner" id="bkBanner" role="status" hidden>
     <span class="bk-ic" aria-hidden="true">🗂️</span>
     <span class="bk-tx" id="bkMsg"></span>
@@ -297,6 +301,50 @@ th { color: var(--text-2); font-weight: 500; }
     <div class="legend" id="legend"></div>
     <div class="chart" id="mLine"></div>
     <details class="tbl"><summary>표로 보기</summary><div class="tblwrap" id="mTable"></div></details>
+  </section>
+
+  <section class="blk">
+    <h2><span class="no">4</span>연간 요약 그래프</h2>
+    <div class="cal-head">
+      <span class="m" id="yTitle"></span>
+      <span>
+        <button class="btn small ghost" id="yPrev" aria-label="이전 해">‹</button>
+        <button class="btn small ghost" id="yNext" aria-label="다음 해">›</button>
+      </span>
+    </div>
+    <div class="summary" id="ySum" style="margin-top:0"></div>
+    <h3>☕ 월별 하루 평균 잔 수 <span style="color:var(--red);font-weight:400;font-size:13px">┄ 목표 2잔</span></h3>
+    <div class="chart" id="yCups"></div>
+    <h3>📈 월별 평균 점수 (10점)</h3>
+    <div class="legend legend-y"></div>
+    <div class="chart" id="yLine"></div>
+    <details class="tbl"><summary>표로 보기</summary><div class="tblwrap" id="yTable"></div></details>
+  </section>
+
+  <section class="blk">
+    <h2><span class="no">5</span>기록 알림</h2>
+    <p class="muted" style="font-size:13.5px">정한 시간에 아이폰 <b>캘린더</b>가 매일 알림을 보내줘요. 알림을 보고 앱을 열어 기록하면 돼요.</p>
+    <div class="row" style="margin-top:10px">
+      <label class="f" style="flex:0 1 170px">알림 시간 (10분 단위)
+        <input type="time" id="rmTime" step="600" value="21:00">
+      </label>
+      <a class="btn primary" id="rmAdd" href="reminders/2100.ics" style="align-self:flex-end;text-decoration:none;display:inline-flex;align-items:center">📅 캘린더에 매일 알림 추가</a>
+    </div>
+    <div class="row" style="margin-top:8px;gap:6px">
+      <span class="muted" style="font-size:13px">추천</span>
+      <button class="btn small" type="button" data-rm="09:00">☀️ 09:00 수면반응</button>
+      <button class="btn small" type="button" data-rm="15:00">🕒 15:00 카페인 마감</button>
+      <button class="btn small" type="button" data-rm="21:00">🌙 21:00 오늘 기록</button>
+    </div>
+    <ul class="cups" id="rmList"></ul>
+    <details class="tbl"><summary>알림 추가·삭제 방법</summary>
+      <ol style="font-size:13.5px;color:var(--text-2);padding-left:20px;margin:8px 0">
+        <li>시간을 고르고 <b>캘린더에 매일 알림 추가</b>를 눌러요.</li>
+        <li>열린 화면에서 <b>"캘린더에 추가"</b> → <b>"추가"</b>를 눌러요.</li>
+        <li>매일 그 시간에 「☕ 커피 기록할 시간」 알림이 와요.</li>
+        <li>끄고 싶으면 캘린더 앱에서 그 일정을 눌러 <b>"이벤트 삭제" → "향후 모든 이벤트 삭제"</b>를 눌러요.</li>
+      </ol>
+    </details>
   </section>
 
   <div class="foot">
@@ -384,7 +432,7 @@ th { color: var(--text-2); font-weight: 500; }
       r.addEventListener('input', () => {
         const dd = day(sel); dd[m.key] = Number(r.value); db[sel] = dd; save();
         w.classList.remove('unset'); w.querySelector('output').textContent = r.value + '점';
-        renderCal(); renderWeek(); renderMonth();
+        renderCal(); renderWeek(); renderMonth(); renderYear(); renderRemind();
       });
       box.appendChild(w);
     });
@@ -498,49 +546,45 @@ th { color: var(--text-2); font-weight: 500; }
 
   // ---------- line chart ----------
   function renderLegend() {
-    const lg = $('legend'); lg.innerHTML = '';
-    METRICS.forEach(m => {
+    [$('legend'), document.querySelector('.legend-y')].forEach(lg => { lg.innerHTML = ''; METRICS.forEach(m => {
       const b = document.createElement('button');
       b.type = 'button'; b.setAttribute('aria-pressed', String(!hidden.has(m.key)));
       b.innerHTML = `<i style="background:var(${m.color})"></i>${m.name}`;
-      b.onclick = () => { hidden.has(m.key) ? hidden.delete(m.key) : hidden.add(m.key); renderLegend(); renderMonth(); };
+      b.onclick = () => { hidden.has(m.key) ? hidden.delete(m.key) : hidden.add(m.key); renderLegend(); renderMonth(); renderYear(); };
       lg.appendChild(b);
-    });
+    }); });
   }
 
-  function renderMonth() {
-    const host = $('mLine'); host.innerHTML = '';
-    const y0 = calMonth.getFullYear(), mo = calMonth.getMonth(), nd = new Date(y0, mo + 1, 0).getDate();
-    $('monthRange').textContent = `${y0}년 ${mo + 1}월 · 날짜별 상태 점수 (10점 만점)`;
-    const days = [...Array(nd)].map((_, i) => { const dt = new Date(y0, mo, i + 1); return { dt, k: ymd(dt), d: db[ymd(dt)] }; });
+  // generic multi-series line chart, 0~10 scale
+  // pts: [{ vals: {key: number|null}, tipHead, extra: [{n,v}] }], xLab(i) → string|null
+  function lineChart(host, pts, xLab, emptyMsg, ariaLabel) {
+    host.innerHTML = '';
+    const n = pts.length;
     const W = Math.max(300, host.clientWidth || 640), H = W < 500 ? 220 : 260, L = 30, R = 64, T = 12, B = 26;
-    const x = i => L + (W - L - R) * (nd === 1 ? 0 : i / (nd - 1));
+    const x = i => L + (W - L - R) * (n === 1 ? 0 : i / (n - 1));
     const y = v => T + (H - T - B) * (1 - v / 10);
-    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': '한 달 수행도 꺾은선 그래프' }, host);
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': ariaLabel }, host);
     const g = el('g', { class: 'axis' }, svg);
     for (let v = 0; v <= 10; v += 2) {
       el('line', { x1: L, x2: W - R, y1: y(v), y2: y(v), class: 'gridl' }, g);
       el('text', { x: L - 6, y: y(v) + 4, 'text-anchor': 'end' }, g).textContent = v;
     }
-    days.forEach((dd, i) => {
-      if (i === 0 || (i + 1) % 5 === 0 || (i === nd - 1 && (i + 1) % 5 > 2)) el('text', { x: x(i), y: H - 8, 'text-anchor': 'middle' }, g).textContent = (i + 1) + '일';
-    });
-    const any = days.some(dd => dd.d && METRICS.some(m => dd.d[m.key] != null));
-    if (!any) { const e = document.createElement('div'); e.className = 'empty'; e.textContent = '이 달에는 아직 점수 기록이 없어요.'; host.appendChild(e); }
-
+    pts.forEach((_, i) => { const t = xLab(i); if (t) el('text', { x: x(i), y: H - 8, 'text-anchor': 'middle' }, g).textContent = t; });
+    if (!pts.some(p => METRICS.some(m => p.vals[m.key] != null))) {
+      const e = document.createElement('div'); e.className = 'empty'; e.textContent = emptyMsg; host.appendChild(e);
+    }
     const labels = [];
     METRICS.forEach(m => {
       if (hidden.has(m.key)) return;
       const c = css(m.color);
-      const pts = days.map((dd, i) => dd.d && dd.d[m.key] != null ? [x(i), y(dd.d[m.key]), dd.d[m.key]] : null);
+      const pp = pts.map((p, i) => p.vals[m.key] != null ? [x(i), y(p.vals[m.key]), p.vals[m.key]] : null);
       let d = '', pen = false;
-      pts.forEach(p => { if (p) { d += (pen ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1); pen = true; } else pen = false; });
+      pp.forEach(p => { if (p) { d += (pen ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1); pen = true; } else pen = false; });
       if (d) el('path', { d, fill: 'none', stroke: c, 'stroke-width': 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }, svg);
-      pts.forEach(p => { if (p) el('circle', { cx: p[0], cy: p[1], r: 3.5, fill: c, stroke: css('--bg'), 'stroke-width': 1.5 }, svg); });
-      const last = [...pts].reverse().find(Boolean);
+      pp.forEach(p => { if (p) el('circle', { cx: p[0], cy: p[1], r: 3.5, fill: c, stroke: css('--bg'), 'stroke-width': 1.5 }, svg); });
+      const last = [...pp].reverse().find(Boolean);
       if (last) labels.push({ y: last[1], x: last[0], name: m.name, v: last[2] });
     });
-    // direct labels at each series' last point, nudged apart
     labels.sort((a, b) => a.y - b.y);
     for (let i = 1; i < labels.length; i++) if (labels[i].y - labels[i - 1].y < 13) labels[i].y = labels[i - 1].y + 13;
     labels.forEach(l => { el('text', { x: l.x + 7, y: l.y + 4, class: 'lab' }, svg).textContent = `${l.name} ${l.v}`; });
@@ -551,22 +595,74 @@ th { color: var(--text-2); font-weight: 500; }
       const p = e.touches ? e.touches[0] : e;
       const r = svg.getBoundingClientRect();
       const sx = (p.clientX - r.left) * (W / r.width);
-      const i = Math.max(0, Math.min(nd - 1, Math.round((sx - L) / (W - L - R) * (nd - 1))));
+      const i = Math.max(0, Math.min(n - 1, Math.round((sx - L) / (W - L - R) * (n - 1))));
       xh.setAttribute('x1', x(i)); xh.setAttribute('x2', x(i)); xh.setAttribute('visibility', 'visible');
-      const dd = days[i];
-      const rows = METRICS.filter(m => !hidden.has(m.key)).map(m => ({ n: m.name, v: dd.d && dd.d[m.key] != null ? dd.d[m.key] + '점' : '–', c: css(m.color) }));
-      rows.push({ n: '☕ 잔 수', v: dd.d ? dd.d.cups.length + '잔' : '–' });
-      showTip(e, `${mo + 1}월 ${i + 1}일 ${DOW[dd.dt.getDay()]}요일`, rows);
+      const rows = METRICS.filter(m => !hidden.has(m.key)).map(m => ({ n: m.name, v: pts[i].vals[m.key] != null ? pts[i].vals[m.key] + '점' : '–', c: css(m.color) }));
+      showTip(e, pts[i].tipHead, rows.concat(pts[i].extra || []));
     };
     hit.addEventListener('mousemove', move);
     hit.addEventListener('touchmove', move, { passive: true });
     hit.addEventListener('touchstart', move, { passive: true });
     hit.addEventListener('mouseleave', () => { xh.setAttribute('visibility', 'hidden'); hideTip(); });
+  }
+
+  function renderMonth() {
+    const y0 = calMonth.getFullYear(), mo = calMonth.getMonth(), nd = new Date(y0, mo + 1, 0).getDate();
+    $('monthRange').textContent = `${y0}년 ${mo + 1}월 · 날짜별 상태 점수 (10점 만점)`;
+    const days = [...Array(nd)].map((_, i) => { const dt = new Date(y0, mo, i + 1); return { dt, d: db[ymd(dt)] }; });
+    lineChart($('mLine'), days.map((dd, i) => ({
+      vals: Object.fromEntries(METRICS.map(m => [m.key, dd.d && dd.d[m.key] != null ? dd.d[m.key] : null])),
+      tipHead: `${mo + 1}월 ${i + 1}일 ${DOW[dd.dt.getDay()]}요일`,
+      extra: [{ n: '☕ 잔 수', v: dd.d ? dd.d.cups.length + '잔' : '–' }],
+    })), i => (i === 0 || (i + 1) % 5 === 0 || (i === nd - 1 && (i + 1) % 5 > 2)) ? (i + 1) + '일' : null,
+    '이 달에는 아직 점수 기록이 없어요.', '한 달 수행도 꺾은선 그래프');
 
     $('mTable').innerHTML = `<table><tr><th>날짜</th><th>잔 수</th>${METRICS.map(m => `<th>${m.name}</th>`).join('')}</tr>` +
       days.filter(dd => dd.d).map(dd => `<tr><td>${mo + 1}/${dd.dt.getDate()}</td><td>${dd.d.cups.length}</td>${METRICS.map(m => `<td>${dd.d[m.key] ?? '–'}</td>`).join('')}</tr>`).join('') +
       '</table>' + (days.some(dd => dd.d) ? '' : '<div class="empty">기록 없음</div>');
   }
+
+  // ---------- yearly summary ----------
+  let year = new Date().getFullYear();
+  const r1 = v => Math.round(v * 10) / 10;
+  function monthStats(y0, mo) {
+    const prefix = `${y0}-${pad(mo + 1)}-`;
+    const ds = Object.keys(db).filter(k => k.startsWith(prefix)).map(k => db[k]).filter(d => d.cups.length || METRICS.some(m => d[m.key] != null));
+    const cupDays = ds.filter(d => d.cups.length || METRICS.some(m => d[m.key] != null));
+    const totalCups = ds.reduce((s, d) => s + d.cups.length, 0);
+    const avg = {};
+    METRICS.forEach(m => { const v = ds.map(d => d[m.key]).filter(v => v != null); avg[m.key] = v.length ? r1(v.reduce((a, b) => a + b, 0) / v.length) : null; });
+    return {
+      days: cupDays.length, totalCups,
+      avgCups: cupDays.length ? r1(totalCups / cupDays.length) : null,
+      goalDays: cupDays.filter(d => d.cups.length <= 2 && !d.cups.some(c => late(c.time))).length,
+      avg,
+    };
+  }
+  function renderYear() {
+    $('yTitle').textContent = `${year}년`;
+    const st = [...Array(12)].map((_, mo) => monthStats(year, mo));
+    const lab = mo => `${mo + 1}월`;
+    barChart($('yCups'), st.map((s, mo) => ({
+      label: lab(mo), full: `${year}년 ${mo + 1}월`, name: '하루 평균', value: s.avgCups,
+      isSel: year === calMonth.getFullYear() && mo === calMonth.getMonth(),
+      extra: s.days ? [{ n: '기록한 날', v: s.days + '일' }, { n: '총 잔 수', v: s.totalCups + '잔' }, { n: '목표 달성', v: s.goalDays + '일' }] : [],
+    })), { color: '--s-cup', unit: '잔', minMax: 4, goal: 2 });
+    lineChart($('yLine'), st.map((s, mo) => ({
+      vals: s.avg, tipHead: `${year}년 ${mo + 1}월 평균`,
+      extra: [{ n: '기록한 날', v: s.days ? s.days + '일' : '–' }],
+    })), mo => mo % 2 === 0 ? lab(mo) : null, '이 해에는 아직 점수 기록이 없어요.', '연간 월별 평균 점수 꺾은선 그래프');
+
+    $('yTable').innerHTML = `<table><tr><th>월</th><th>기록일</th><th>평균 잔</th><th>목표 달성</th>${METRICS.map(m => `<th>${m.name}</th>`).join('')}</tr>` +
+      st.map((s, mo) => s.days ? `<tr><td>${mo + 1}월</td><td>${s.days}</td><td>${s.avgCups}</td><td>${s.goalDays}일</td>${METRICS.map(m => `<td>${s.avg[m.key] ?? '–'}</td>`).join('')}</tr>` : '').join('') +
+      '</table>' + (st.some(s => s.days) ? '' : '<div class="empty">기록 없음</div>');
+    const tot = st.reduce((a, s) => ({ d: a.d + s.days, c: a.c + s.totalCups, g: a.g + s.goalDays }), { d: 0, c: 0, g: 0 });
+    $('ySum').innerHTML = tot.d
+      ? `<span class="tag">기록한 날 ${tot.d}일</span><span class="tag">총 ${tot.c}잔</span><span class="tag">하루 평균 ${r1(tot.c / tot.d)}잔</span><span class="tag ok">목표 달성 ${tot.g}일 (${Math.round(tot.g / tot.d * 100)}%)</span>`
+      : '';
+  }
+  $('yPrev').onclick = () => { year--; renderYear(); };
+  $('yNext').onclick = () => { year++; renderYear(); };
 
   // ---------- backup ----------
   const BK = 'coffee-last-backup', SNOOZE = 'coffee-backup-snooze', REMIND_DAYS = 7;
@@ -619,7 +715,43 @@ th { color: var(--text-2); font-weight: 500; }
     e.target.value = '';
   };
 
-  function render() { renderForm(); renderCal(); renderWeek(); renderMonth(); renderBackup(); }
+  // ---------- reminders (iPhone Calendar .ics) ----------
+  const RM = 'coffee-reminders';
+  const rmTimes = () => { try { return JSON.parse(lsGet(RM)) || []; } catch (e) { return []; } };
+  const snap10 = t => { const [h, m] = (t || '21:00').split(':').map(Number); const mm = Math.round(m / 10) * 10; const hh = (h + (mm === 60 ? 1 : 0)) % 24; return `${pad(hh)}:${pad(mm % 60)}`; };
+  function setRmTime(t) {
+    t = snap10(t); $('rmTime').value = t;
+    $('rmAdd').href = `reminders/${t.replace(':', '')}.ics`;
+    $('rmAdd').textContent = `📅 매일 ${fmtTime(t)} 알림 추가`;
+  }
+  $('rmTime').addEventListener('change', e => setRmTime(e.target.value));
+  document.querySelectorAll('[data-rm]').forEach(b => b.addEventListener('click', () => setRmTime(b.dataset.rm)));
+  $('rmAdd').addEventListener('click', () => {
+    const t = $('rmTime').value, list = rmTimes();
+    if (!list.includes(t)) { list.push(t); list.sort(); lsSet(RM, JSON.stringify(list)); }
+    setTimeout(renderRemind, 300);
+  });
+  function renderRemind() {
+    const list = rmTimes(), ul = $('rmList'); ul.innerHTML = '';
+    list.forEach(t => {
+      const li = document.createElement('li');
+      li.innerHTML = `<span class="t">${fmtTime(t)}</span><span>매일 캘린더 알림</span><button class="btn small ghost x" aria-label="목록에서 지우기">✕</button>`;
+      li.querySelector('button').onclick = () => {
+        alert('앱 목록에서만 지워져요. 알림을 완전히 끄려면 캘린더 앱에서 「☕ 커피 기록할 시간」 일정을 지워 주세요.');
+        lsSet(RM, JSON.stringify(rmTimes().filter(x => x !== t))); renderRemind();
+      };
+      ul.appendChild(li);
+    });
+    // 앱 안 안내: 알림 시간이 지났는데 오늘 기록이 없으면
+    const now = nowTime(), d = db[today];
+    const empty = !d || (!d.cups.length && !METRICS.some(m => d[m.key] != null));
+    const passed = list.filter(t => t <= now);
+    $('rmBanner').hidden = !(passed.length && empty);
+    if (passed.length && empty) $('rmMsg').textContent = `${fmtTime(passed[passed.length - 1])} 기록 알림 시간이 지났어요. 오늘 마신 커피와 상태를 기록해 볼까요?`;
+  }
+  setRmTime('21:00');
+
+  function render() { renderForm(); renderCal(); renderWeek(); renderMonth(); renderYear(); renderBackup(); renderRemind(); }
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
   let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(render, 150); });
   renderLegend();
