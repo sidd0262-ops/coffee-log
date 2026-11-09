@@ -271,7 +271,7 @@ th { color: var(--text-2); font-weight: 500; }
   </div>
   <section class="blk">
     <h2><span class="no">0</span>오늘 기록하기</h2>
-    <p class="note">* 집중도 및 피로감, 수면 만족도는 10점 만점 기준으로 점수 부여할 것, 수면 반응은 다음날 아침기상 기준으로 기록하시오.</p>
+    <p class="note">* 집중도 및 피로감, 수면 반응은 10점 만점 기준으로 점수 부여할 것, 수면 반응은 다음날 아침기상 기준으로 기록하시오.</p>
     <div class="row">
       <label class="f" style="flex:0 1 200px">날짜
         <input type="date" id="date">
@@ -396,7 +396,7 @@ th { color: var(--text-2); font-weight: 500; }
   const METRICS = [
     { key: 'focus',   name: '집중도',       hint: '점수가 높을수록 집중이 잘 된 상태',   color: '--s-focus' },
     { key: 'fatigue', name: '피로감',       hint: '점수가 높을수록 피곤한 상태',       color: '--s-fatigue' },
-    { key: 'sleep',   name: '수면반응',     hint: '점수가 높을수록 잘 잔 상태 (아침 기상 기준)', color: '--s-sleep' },
+    { key: 'sleep',   name: '수면반응',     hint: '점수가 높을수록 잠을 잘 못 잔 상태 (아침 기상 기준)', color: '--s-sleep' },
     { key: 'heart',   name: '심장 두근거림', hint: '점수가 높을수록 두근거림이 심한 상태', color: '--s-heart' },
   ];
 
