@@ -155,10 +155,13 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--text-2)
 
 .sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 22px; margin-top: 8px; }
 @media (max-width: 560px) { .sliders { grid-template-columns: 1fr; } }
-.sl label { display: flex; justify-content: space-between; font-size: 14px; }
-.sl label output { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--leather); }
-.sl small { display: block; color: var(--text-3); font-size: 12px; }
-input[type=range] { width: 100%; accent-color: var(--leather); }
+.sl .sl-h { display: flex; justify-content: space-between; font-size: 14px; }
+.sl .sl-h output { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--leather); }
+.sl small { display: block; color: var(--text-2); font-size: 12px; }
+.dots { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 3px; margin-top: 7px; }
+.dot { aspect-ratio: 1; width: 100%; padding: 0; border-radius: 50%; border: 1px solid var(--line); background: var(--bg-soft); color: var(--text-2); font-size: 13px; font-variant-numeric: tabular-nums; cursor: pointer; display: flex; align-items: center; justify-content: center; touch-action: manipulation; }
+.dot:hover { background: var(--bg-hover); }
+.dot[aria-pressed="true"] { background: var(--leather); border-color: var(--leather); color: #fff8ee; font-weight: 700; }
 .sl.unset output { color: var(--text-3); font-weight: 400; }
 .none-btn { width: 100%; margin-top: 10px; }
 .none-btn[aria-pressed="true"] { background: var(--green-bg); border-color: var(--green); color: var(--green); font-weight: 700; }
@@ -297,7 +300,7 @@ th { color: var(--text-2); font-weight: 500; }
     <ul class="cups" id="cups"></ul>
     <div class="summary" id="summary"></div>
 
-    <h3>오늘의 상태 <span class="muted" style="font-weight:400;font-size:13px">(0~10점)</span></h3>
+    <h3>오늘의 상태 <span class="muted" style="font-weight:400;font-size:13px">(1~10점 · 다시 누르면 취소)</span></h3>
     <div class="sliders" id="sliders"></div>
   </section>
 
@@ -391,10 +394,10 @@ th { color: var(--text-2); font-weight: 500; }
   const KEY = 'coffee-log-v1';
   const DOW = ['일','월','화','수','목','금','토'];
   const METRICS = [
-    { key: 'focus',   name: '집중도',       hint: '높을수록 잘 집중함',            color: '--s-focus' },
-    { key: 'fatigue', name: '피로감',       hint: '높을수록 피곤함',              color: '--s-fatigue' },
-    { key: 'sleep',   name: '수면반응',     hint: '어젯밤 수면 · 오늘 아침 기상 기준', color: '--s-sleep' },
-    { key: 'heart',   name: '심장 두근거림', hint: '높을수록 두근거림이 심함',       color: '--s-heart' },
+    { key: 'focus',   name: '집중도',       hint: '점수가 높을수록 집중이 잘 된 상태',   color: '--s-focus' },
+    { key: 'fatigue', name: '피로감',       hint: '점수가 높을수록 피곤한 상태',       color: '--s-fatigue' },
+    { key: 'sleep',   name: '수면반응',     hint: '점수가 높을수록 잘 잔 상태 (아침 기상 기준)', color: '--s-sleep' },
+    { key: 'heart',   name: '심장 두근거림', hint: '점수가 높을수록 두근거림이 심한 상태', color: '--s-heart' },
   ];
 
   let db = {};
@@ -504,15 +507,20 @@ th { color: var(--text-2); font-weight: 500; }
       const v = d[m.key];
       const w = document.createElement('div');
       w.className = 'sl' + (v == null ? ' unset' : '');
-      w.innerHTML = `<label><span>${m.name}</span><output>${v == null ? '미입력' : v + '점'}</output></label>
-        <input type="range" min="0" max="10" step="1" value="${v == null ? 5 : v}" aria-label="${m.name}">
-        <small>${m.hint}</small>`;
-      const r = w.querySelector('input');
-      r.addEventListener('input', () => {
-        const dd = day(sel); dd[m.key] = Number(r.value); db[sel] = dd; save();
-        w.classList.remove('unset'); w.querySelector('output').textContent = r.value + '점';
+      w.innerHTML = `<div class="sl-h"><span>${m.name}</span><output>${v == null ? '미입력' : v + '점'}</output></div>
+        <small>${m.hint}</small>
+        <div class="dots" role="group" aria-label="${m.name} 점수">${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => `<button type="button" class="dot" data-n="${n}" aria-label="${n}점" aria-pressed="${v === n}">${n}</button>`).join('')}</div>`;
+      w.querySelectorAll('.dot').forEach(b => b.addEventListener('click', () => {
+        const dd = day(sel), n = Number(b.dataset.n);
+        // 같은 점수를 다시 누르면 선택 취소
+        if (dd[m.key] === n) delete dd[m.key]; else dd[m.key] = n;
+        db[sel] = dd; save();
+        const cur = dd[m.key];
+        w.classList.toggle('unset', cur == null);
+        w.querySelector('output').textContent = cur == null ? '미입력' : cur + '점';
+        w.querySelectorAll('.dot').forEach(x => x.setAttribute('aria-pressed', String(Number(x.dataset.n) === cur)));
         renderCal(); renderWeek(); renderMonth(); renderYear(); renderRemind();
-      });
+      }));
       box.appendChild(w);
     });
   }
