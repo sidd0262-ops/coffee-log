@@ -102,6 +102,15 @@ body {
 .goal b { color: #f6ead6; }
 .goal .gl { display: flex; gap: 10px; align-items: baseline; margin: 3px 0; }
 .goal .gl span:first-child { width: 20px; text-align: center; flex: none; }
+.goal .gl[hidden], #goalForm[hidden], #goalView[hidden] { display: none; }
+.goal-act { display: flex; justify-content: flex-end; gap: 6px; margin-top: 8px; }
+.goal-btn { border: 1px solid rgba(201,164,107,.5); background: transparent; color: #eadcc5; border-radius: 999px; padding: 5px 13px; min-height: 34px; font-size: 13px; cursor: pointer; }
+.goal-btn.ghost { border-color: transparent; }
+.goal-btn.solid { background: #c9a46b; border-color: #c9a46b; color: #2a1d16; }
+.gf { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: #c7b49a; margin-bottom: 8px; flex: 1 1 0; min-width: 0; }
+.goal .gf input, .goal .gf input[type=number], .goal .gf input[type=time] { font: inherit; font-size: 16px; color: #f6ead6; background: rgba(255,255,255,.08); border: 1px solid rgba(201,164,107,.35); border-radius: 10px; padding: 8px 10px; width: 100%; min-height: 42px; color-scheme: dark; }
+.gf-row { display: flex; gap: 10px; }
+.gf-note { font-size: 12px; color: #a8967f; margin: 0; }
 
 /* wood strip under hero */
 .wood { height: 10px; background: repeating-linear-gradient(90deg, #5a3a26 0 38px, #6a4630 38px 70px, #553623 70px 120px); box-shadow: inset 0 -2px 0 rgba(0,0,0,.25); }
@@ -151,6 +160,8 @@ select { background-image: linear-gradient(45deg, transparent 50%, var(--text-2)
 .sl small { display: block; color: var(--text-3); font-size: 12px; }
 input[type=range] { width: 100%; accent-color: var(--leather); }
 .sl.unset output { color: var(--text-3); font-weight: 400; }
+.none-btn { width: 100%; margin-top: 10px; }
+.none-btn[aria-pressed="true"] { background: var(--green-bg); border-color: var(--green); color: var(--green); font-weight: 700; }
 .summary { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
 
 /* calendar */
@@ -216,9 +227,27 @@ th { color: var(--text-2); font-weight: 500; }
       <div class="sub">오늘의 한 잔을 천천히, 기록으로 남겨요</div>
     </div>
     <div class="goal">
-      <div class="gl"><span>💡</span><span><b>목표:</b> 일일 카페인 최대 2잔 이하로 조절하기</span></div>
-      <div class="gl"><span>🕒</span><span>오후 3시 이후에는 마시지 않기</span></div>
-      <div class="gl"><span>🍵</span><span>어려운 경우 티로 대체</span></div>
+      <div id="goalView">
+        <div class="gl" data-g="0"><span>💡</span><span><b>목표:</b> <span class="gt"></span></span></div>
+        <div class="gl" data-g="1"><span>🕒</span><span class="gt"></span></div>
+        <div class="gl" data-g="2"><span>🍵</span><span class="gt"></span></div>
+        <div class="goal-act"><button class="goal-btn" id="goalEdit" type="button">✏️ 목표 수정</button></div>
+      </div>
+      <form id="goalForm" hidden>
+        <label class="gf"><span>💡 목표</span><input id="g0" maxlength="80"></label>
+        <label class="gf"><span>🕒 다짐 1</span><input id="g1" maxlength="80"></label>
+        <label class="gf"><span>🍵 다짐 2</span><input id="g2" maxlength="80"></label>
+        <div class="gf-row">
+          <label class="gf"><span>하루 목표 잔 수</span><input id="gCups" type="number" min="0" max="20" step="1" inputmode="numeric"></label>
+          <label class="gf"><span>마감 시간</span><input id="gCut" type="time"></label>
+        </div>
+        <p class="gf-note">잔 수와 마감 시간은 그래프의 목표선과 빨간 경고에 쓰여요.</p>
+        <div class="goal-act">
+          <button class="goal-btn ghost" id="goalReset" type="button">처음 내용으로</button>
+          <button class="goal-btn ghost" id="goalCancel" type="button">취소</button>
+          <button class="goal-btn solid" type="submit">저장</button>
+        </div>
+      </form>
     </div>
   </div>
 </header>
@@ -264,6 +293,7 @@ th { color: var(--text-2); font-weight: 500; }
       </div>
       <button class="btn primary" id="add" type="button" style="margin-left:auto">＋ 잔 추가</button>
     </div>
+    <button class="btn none-btn" id="none" type="button" aria-pressed="false">🚫 이날은 섭취 안 함</button>
     <ul class="cups" id="cups"></ul>
     <div class="summary" id="summary"></div>
 
@@ -288,7 +318,7 @@ th { color: var(--text-2); font-weight: 500; }
     <h2><span class="no">2</span>일주일 카페인 섭취 그래프</h2>
     <p class="muted" id="weekRange" style="font-size:13.5px"></p>
     <div class="charts3">
-      <div><h3>☕ 하루 잔 수 <span style="color:var(--red);font-weight:400;font-size:13px">┄ 목표 2잔</span></h3><div class="chart" id="wCups"></div></div>
+      <div><h3>☕ 하루 잔 수 <span style="color:var(--red);font-weight:400;font-size:13px">┄ 목표 <span class="goalN">2</span>잔</span></h3><div class="chart" id="wCups"></div></div>
       <div><h3>🥤 하루 섭취량 (ml)</h3><div class="chart" id="wMl"></div></div>
       <div><h3>😴 전날 수면 반응 (10점)</h3><div class="chart" id="wSleep"></div></div>
     </div>
@@ -313,7 +343,7 @@ th { color: var(--text-2); font-weight: 500; }
       </span>
     </div>
     <div class="summary" id="ySum" style="margin-top:0"></div>
-    <h3>☕ 월별 하루 평균 잔 수 <span style="color:var(--red);font-weight:400;font-size:13px">┄ 목표 2잔</span></h3>
+    <h3>☕ 월별 하루 평균 잔 수 <span style="color:var(--red);font-weight:400;font-size:13px">┄ 목표 <span class="goalN">2</span>잔</span></h3>
     <div class="chart" id="yCups"></div>
     <h3>📈 월별 평균 점수 (10점)</h3>
     <div class="legend legend-y"></div>
@@ -371,15 +401,30 @@ th { color: var(--text-2); font-weight: 500; }
   try { db = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { db = {}; }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {} };
 
+  const GOAL_KEY = 'coffee-goal';
+  const GOAL_DEFAULT = { lines: ['일일 카페인 최대 2잔 이하로 조절하기', '오후 3시 이후에는 마시지 않기', '어려운 경우 티로 대체'], cups: 2, cut: '15:00' };
+  const cleanGoal = g => {
+    const lines = GOAL_DEFAULT.lines.map((_, i) => (g && Array.isArray(g.lines) && typeof g.lines[i] === 'string') ? g.lines[i].trim() : GOAL_DEFAULT.lines[i]);
+    const n = g ? Number(g.cups) : NaN;
+    return { lines, cups: Number.isInteger(n) && n >= 0 && n <= 20 ? n : GOAL_DEFAULT.cups, cut: g && /^\d\d:\d\d$/.test(g.cut || '') ? g.cut : GOAL_DEFAULT.cut };
+  };
+  let goalCfg = GOAL_DEFAULT;
+  try { goalCfg = cleanGoal(JSON.parse(localStorage.getItem(GOAL_KEY))); } catch (e) {}
+  const saveGoal = () => { try { localStorage.setItem(GOAL_KEY, JSON.stringify(goalCfg)); } catch (e) {} };
+
   const pad = n => String(n).padStart(2, '0');
   const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   const parse = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
   const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
   const day = k => db[k] || { cups: [] };
   const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-  const late = t => t && t >= '15:00';
+  const late = t => t && t >= goalCfg.cut;
   const fmtTime = t => { if (!t) return '시간 미입력'; const [h, m] = t.split(':').map(Number); return `${h < 12 ? '오전' : '오후'} ${pad(h % 12 || 12)}:${pad(m)}`; };
   const $ = id => document.getElementById(id);
+  // 잔 수를 알 수 있는 날: 커피를 기록했거나 '섭취 안 함'을 고른 날
+  const intakeKnown = d => !!d && (d.cups.length > 0 || !!d.none);
+  const cupsOf = d => intakeKnown(d) ? d.cups.length : null;
+  const hasData = d => !!d && (intakeKnown(d) || METRICS.some(m => d[m.key] != null));
 
   const today = ymd(new Date());
   let sel = today;
@@ -399,7 +444,39 @@ th { color: var(--text-2); font-weight: 500; }
     const d = day(sel);
     d.cups.push({ type: $('type').value, temp, time: $('time').value, ml: Number($('ml').value) || 0 });
     d.cups.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+    delete d.none;
     db[sel] = d; save(); render();
+  });
+  $('none').addEventListener('click', () => {
+    const d = day(sel);
+    if (d.none) delete d.none;
+    else {
+      if (d.cups.length && !confirm(`이 날짜에 기록한 ${d.cups.length}잔을 지우고 '섭취 안 함'으로 바꿀까요?`)) return;
+      d.cups = []; d.none = true;
+    }
+    db[sel] = d; save(); render();
+  });
+
+  // ---------- goal ----------
+  function renderGoal() {
+    goalCfg.lines.forEach((t, i) => {
+      const row = document.querySelector(`.gl[data-g="${i}"]`);
+      row.querySelector('.gt').textContent = t; row.hidden = !t;
+    });
+    document.querySelectorAll('.goalN').forEach(e => { e.textContent = goalCfg.cups; });
+  }
+  function fillGoalForm(g) {
+    g.lines.forEach((t, i) => { $('g' + i).value = t; });
+    $('gCups').value = g.cups; $('gCut').value = g.cut;
+  }
+  const showGoalForm = on => { $('goalView').hidden = on; $('goalForm').hidden = !on; };
+  $('goalEdit').onclick = () => { fillGoalForm(goalCfg); showGoalForm(true); };
+  $('goalCancel').onclick = () => showGoalForm(false);
+  $('goalReset').onclick = () => fillGoalForm(GOAL_DEFAULT);
+  $('goalForm').addEventListener('submit', e => {
+    e.preventDefault();
+    goalCfg = cleanGoal({ lines: [0, 1, 2].map(i => $('g' + i).value), cups: $('gCups').value === '' ? NaN : Math.round($('gCups').value), cut: $('gCut').value });
+    saveGoal(); showGoalForm(false); render();
   });
 
   function renderForm() {
@@ -409,15 +486,17 @@ th { color: var(--text-2); font-weight: 500; }
     const ul = $('cups'); ul.innerHTML = '';
     d.cups.forEach((c, i) => {
       const li = document.createElement('li');
-      li.innerHTML = `<span class="t">${fmtTime(c.time)}</span><span>${c.type === '녹차' ? '🍵' : '☕'} ${c.type} · ${c.temp === '아이스' ? '🧊' : '🔥'}${c.temp} · ${c.ml}ml</span>${late(c.time) ? '<span class="tag warn">오후 3시 이후</span>' : ''}<button class="btn small ghost x" aria-label="삭제">✕</button>`;
+      li.innerHTML = `<span class="t">${fmtTime(c.time)}</span><span>${c.type === '녹차' ? '🍵' : '☕'} ${c.type} · ${c.temp === '아이스' ? '🧊' : '🔥'}${c.temp} · ${c.ml}ml</span>${late(c.time) ? `<span class="tag warn">${fmtTime(goalCfg.cut)} 이후</span>` : ''}<button class="btn small ghost x" aria-label="삭제">✕</button>`;
       li.querySelector('button').onclick = () => { d.cups.splice(i, 1); db[sel] = d; save(); render(); };
       ul.appendChild(li);
     });
     const n = d.cups.length, ml = d.cups.reduce((s, c) => s + c.ml, 0);
-    $('summary').innerHTML = n
+    const noneBtn = $('none'); noneBtn.setAttribute('aria-pressed', String(!!d.none));
+    noneBtn.textContent = d.none ? '✓ 이날은 섭취 안 함 (다시 누르면 취소)' : '🚫 이날은 섭취 안 함';
+    $('summary').innerHTML = d.none ? '<span class="tag ok">✓ 커피를 마시지 않은 날 · 0잔</span>' : n
       ? `<span class="tag">총 잔 수: ${n}잔</span><span class="tag">총 ${ml}ml</span>` +
-        (n <= 2 ? '<span class="tag ok">✓ 2잔 이하 목표 달성</span>' : '<span class="tag warn">2잔 초과</span>') +
-        (d.cups.some(c => late(c.time)) ? '<span class="tag warn">오후 3시 이후 섭취</span>' : '')
+        (n <= goalCfg.cups ? `<span class="tag ok">✓ ${goalCfg.cups}잔 이하 목표 달성</span>` : `<span class="tag warn">${goalCfg.cups}잔 초과</span>`) +
+        (d.cups.some(c => late(c.time)) ? `<span class="tag warn">${fmtTime(goalCfg.cut)} 이후 섭취</span>` : '')
       : '<span class="muted" style="font-size:14px">아직 기록한 커피가 없어요.</span>';
 
     const box = $('sliders'); box.innerHTML = '';
@@ -455,9 +534,10 @@ th { color: var(--text-2); font-weight: 500; }
       let html = `<span class="num">${label}</span>`;
       const n = d.cups.length;
       if (n) {
-        const warn = n > 2 || d.cups.some(c => late(c.time));
+        const warn = n > goalCfg.cups || d.cups.some(c => late(c.time));
         html += `<span class="ev${warn ? ' warn' : ''}">☕ ${n}잔</span>`;
       }
+      else if (d.none) html += '<span class="ev sleep">🚫 0잔</span>';
       if (d.sleep != null) html += `<span class="ev sleep">😴 ${d.sleep}</span>`;
       b.innerHTML = html;
       b.setAttribute('aria-label', `${dt.getMonth() + 1}월 ${dt.getDate()}일${n ? `, ${n}잔` : ''}`);
@@ -532,16 +612,16 @@ th { color: var(--text-2); font-weight: 500; }
       const k = ymd(dt), d = db[k];
       return { k, dt, d, label: `${dt.getDate()}(${DOW[dt.getDay()]})`, full: `${dt.getMonth() + 1}월 ${dt.getDate()}일 ${DOW[dt.getDay()]}요일`, isSel: k === sel };
     });
-    barChart($('wCups'), base.map(b => ({ ...b, name: '잔 수', value: b.d ? b.d.cups.length : null,
-      extra: b.d && b.d.cups.some(c => late(c.time)) ? [{ n: '⚠ 오후 3시 이후', v: b.d.cups.filter(c => late(c.time)).length + '잔' }] : [] })),
-      { color: '--s-cup', unit: '잔', minMax: 4, goal: 2 });
-    barChart($('wMl'), base.map(b => ({ ...b, name: '섭취량', value: b.d ? b.d.cups.reduce((s, c) => s + c.ml, 0) : null })),
+    barChart($('wCups'), base.map(b => ({ ...b, name: '잔 수', value: cupsOf(b.d),
+      extra: b.d && b.d.cups.some(c => late(c.time)) ? [{ n: `⚠ ${fmtTime(goalCfg.cut)} 이후`, v: b.d.cups.filter(c => late(c.time)).length + '잔' }] : [] })),
+      { color: '--s-cup', unit: '잔', minMax: 4, goal: goalCfg.cups });
+    barChart($('wMl'), base.map(b => ({ ...b, name: '섭취량', value: intakeKnown(b.d) ? b.d.cups.reduce((s, c) => s + c.ml, 0) : null })),
       { color: '--s-cup', unit: 'ml', minMax: 500 });
     barChart($('wSleep'), base.map(b => ({ ...b, name: '수면반응', value: b.d && b.d.sleep != null ? b.d.sleep : null })),
       { color: '--s-sleep', unit: '점', fixedMax: 10, step: 2 });
 
     $('wTable').innerHTML = `<table><tr><th>날짜</th><th>잔 수</th><th>섭취량</th><th>수면반응</th></tr>` +
-      base.map(b => `<tr><td>${b.label}</td><td>${b.d ? b.d.cups.length + '잔' : '–'}</td><td>${b.d ? b.d.cups.reduce((s, c) => s + c.ml, 0) + 'ml' : '–'}</td><td>${b.d && b.d.sleep != null ? b.d.sleep : '–'}</td></tr>`).join('') + '</table>';
+      base.map(b => `<tr><td>${b.label}</td><td>${intakeKnown(b.d) ? b.d.cups.length + '잔' : '–'}</td><td>${intakeKnown(b.d) ? b.d.cups.reduce((s, c) => s + c.ml, 0) + 'ml' : '–'}</td><td>${b.d && b.d.sleep != null ? b.d.sleep : '–'}</td></tr>`).join('') + '</table>';
   }
 
   // ---------- line chart ----------
@@ -613,13 +693,13 @@ th { color: var(--text-2); font-weight: 500; }
     lineChart($('mLine'), days.map((dd, i) => ({
       vals: Object.fromEntries(METRICS.map(m => [m.key, dd.d && dd.d[m.key] != null ? dd.d[m.key] : null])),
       tipHead: `${mo + 1}월 ${i + 1}일 ${DOW[dd.dt.getDay()]}요일`,
-      extra: [{ n: '☕ 잔 수', v: dd.d ? dd.d.cups.length + '잔' : '–' }],
+      extra: [{ n: '☕ 잔 수', v: intakeKnown(dd.d) ? dd.d.cups.length + '잔' : '–' }],
     })), i => (i === 0 || (i + 1) % 5 === 0 || (i === nd - 1 && (i + 1) % 5 > 2)) ? (i + 1) + '일' : null,
     '이 달에는 아직 점수 기록이 없어요.', '한 달 수행도 꺾은선 그래프');
 
     $('mTable').innerHTML = `<table><tr><th>날짜</th><th>잔 수</th>${METRICS.map(m => `<th>${m.name}</th>`).join('')}</tr>` +
-      days.filter(dd => dd.d).map(dd => `<tr><td>${mo + 1}/${dd.dt.getDate()}</td><td>${dd.d.cups.length}</td>${METRICS.map(m => `<td>${dd.d[m.key] ?? '–'}</td>`).join('')}</tr>`).join('') +
-      '</table>' + (days.some(dd => dd.d) ? '' : '<div class="empty">기록 없음</div>');
+      days.filter(dd => hasData(dd.d)).map(dd => `<tr><td>${mo + 1}/${dd.dt.getDate()}</td><td>${cupsOf(dd.d) ?? '–'}</td>${METRICS.map(m => `<td>${dd.d[m.key] ?? '–'}</td>`).join('')}</tr>`).join('') +
+      '</table>' + (days.some(dd => hasData(dd.d)) ? '' : '<div class="empty">기록 없음</div>');
   }
 
   // ---------- yearly summary ----------
@@ -627,15 +707,15 @@ th { color: var(--text-2); font-weight: 500; }
   const r1 = v => Math.round(v * 10) / 10;
   function monthStats(y0, mo) {
     const prefix = `${y0}-${pad(mo + 1)}-`;
-    const ds = Object.keys(db).filter(k => k.startsWith(prefix)).map(k => db[k]).filter(d => d.cups.length || METRICS.some(m => d[m.key] != null));
-    const cupDays = ds.filter(d => d.cups.length || METRICS.some(m => d[m.key] != null));
+    const ds = Object.keys(db).filter(k => k.startsWith(prefix)).map(k => db[k]).filter(hasData);
+    const cupDays = ds.filter(intakeKnown);
     const totalCups = ds.reduce((s, d) => s + d.cups.length, 0);
     const avg = {};
     METRICS.forEach(m => { const v = ds.map(d => d[m.key]).filter(v => v != null); avg[m.key] = v.length ? r1(v.reduce((a, b) => a + b, 0) / v.length) : null; });
     return {
-      days: cupDays.length, totalCups,
+      days: ds.length, intakeDays: cupDays.length, totalCups,
       avgCups: cupDays.length ? r1(totalCups / cupDays.length) : null,
-      goalDays: cupDays.filter(d => d.cups.length <= 2 && !d.cups.some(c => late(c.time))).length,
+      goalDays: cupDays.filter(d => d.cups.length <= goalCfg.cups && !d.cups.some(c => late(c.time))).length,
       avg,
     };
   }
@@ -647,18 +727,18 @@ th { color: var(--text-2); font-weight: 500; }
       label: lab(mo), full: `${year}년 ${mo + 1}월`, name: '하루 평균', value: s.avgCups,
       isSel: year === calMonth.getFullYear() && mo === calMonth.getMonth(),
       extra: s.days ? [{ n: '기록한 날', v: s.days + '일' }, { n: '총 잔 수', v: s.totalCups + '잔' }, { n: '목표 달성', v: s.goalDays + '일' }] : [],
-    })), { color: '--s-cup', unit: '잔', minMax: 4, goal: 2 });
+    })), { color: '--s-cup', unit: '잔', minMax: 4, goal: goalCfg.cups });
     lineChart($('yLine'), st.map((s, mo) => ({
       vals: s.avg, tipHead: `${year}년 ${mo + 1}월 평균`,
       extra: [{ n: '기록한 날', v: s.days ? s.days + '일' : '–' }],
     })), mo => mo % 2 === 0 ? lab(mo) : null, '이 해에는 아직 점수 기록이 없어요.', '연간 월별 평균 점수 꺾은선 그래프');
 
     $('yTable').innerHTML = `<table><tr><th>월</th><th>기록일</th><th>평균 잔</th><th>목표 달성</th>${METRICS.map(m => `<th>${m.name}</th>`).join('')}</tr>` +
-      st.map((s, mo) => s.days ? `<tr><td>${mo + 1}월</td><td>${s.days}</td><td>${s.avgCups}</td><td>${s.goalDays}일</td>${METRICS.map(m => `<td>${s.avg[m.key] ?? '–'}</td>`).join('')}</tr>` : '').join('') +
+      st.map((s, mo) => s.days ? `<tr><td>${mo + 1}월</td><td>${s.days}</td><td>${s.avgCups ?? '–'}</td><td>${s.goalDays}일</td>${METRICS.map(m => `<td>${s.avg[m.key] ?? '–'}</td>`).join('')}</tr>` : '').join('') +
       '</table>' + (st.some(s => s.days) ? '' : '<div class="empty">기록 없음</div>');
-    const tot = st.reduce((a, s) => ({ d: a.d + s.days, c: a.c + s.totalCups, g: a.g + s.goalDays }), { d: 0, c: 0, g: 0 });
+    const tot = st.reduce((a, s) => ({ d: a.d + s.days, i: a.i + s.intakeDays, c: a.c + s.totalCups, g: a.g + s.goalDays }), { d: 0, i: 0, c: 0, g: 0 });
     $('ySum').innerHTML = tot.d
-      ? `<span class="tag">기록한 날 ${tot.d}일</span><span class="tag">총 ${tot.c}잔</span><span class="tag">하루 평균 ${r1(tot.c / tot.d)}잔</span><span class="tag ok">목표 달성 ${tot.g}일 (${Math.round(tot.g / tot.d * 100)}%)</span>`
+      ? `<span class="tag">기록한 날 ${tot.d}일</span><span class="tag">총 ${tot.c}잔</span>` + (tot.i ? `<span class="tag">하루 평균 ${r1(tot.c / tot.i)}잔</span><span class="tag ok">목표 달성 ${tot.g}일 (${Math.round(tot.g / tot.i * 100)}%)</span>` : '')
       : '';
   }
   $('yPrev').onclick = () => { year--; renderYear(); };
@@ -672,7 +752,7 @@ th { color: var(--text-2); font-weight: 500; }
   const markBackedUp = () => { lsSet(BK, today); lsSet(SNOOZE, ''); renderBackup(); };
 
   async function doBackup() {
-    const text = JSON.stringify(db, null, 2);
+    const text = JSON.stringify({ ...db, _settings: { goal: goalCfg, reminders: rmTimes() } }, null, 2);
     const name = `커피기록-${today}`;
     const title = '카페인 조절 기록지 백업';
     // 1) 공유 창 (아이폰: 파일에 저장 · 카카오톡 · 메일 · AirDrop)
@@ -696,7 +776,7 @@ th { color: var(--text-2); font-weight: 500; }
   $('bkLater').onclick = () => { lsSet(SNOOZE, today); renderBackup(); };
 
   function renderBackup() {
-    const keys = Object.keys(db).filter(k => db[k] && (db[k].cups.length || METRICS.some(m => db[k][m.key] != null))).sort();
+    const keys = Object.keys(db).filter(k => hasData(db[k])).sort();
     const last = lsGet(BK);
     $('bkInfo').textContent = last ? `마지막 백업: ${parse(last).getMonth() + 1}월 ${parse(last).getDate()}일 (${daysBetween(last, today)}일 전)` : '아직 백업한 적이 없어요';
     let msg = '';
@@ -710,7 +790,15 @@ th { color: var(--text-2); font-weight: 500; }
   }
   $('import').onchange = async e => {
     const f = e.target.files[0]; if (!f) return;
-    try { const data = JSON.parse(await f.text()); if (confirm('불러온 기록을 지금 기록과 합칠까요? (같은 날짜는 불러온 기록으로 바뀌어요)')) { Object.assign(db, data); save(); render(); } }
+    try { const data = JSON.parse(await f.text()); if (confirm('불러온 기록을 지금 기록과 합칠까요? (같은 날짜는 불러온 기록으로 바뀌어요)')) {
+        const st = data._settings; delete data._settings;
+        Object.assign(db, data); save();
+        if (st) {
+          if (st.goal) { goalCfg = cleanGoal(st.goal); saveGoal(); }
+          if (Array.isArray(st.reminders)) lsSet(RM, JSON.stringify(st.reminders.filter(t => /^\d\d:\d\d$/.test(t))));
+        }
+        render();
+      } }
     catch (err) { alert('파일을 읽을 수 없어요.'); }
     e.target.value = '';
   };
@@ -744,14 +832,14 @@ th { color: var(--text-2); font-weight: 500; }
     });
     // 앱 안 안내: 알림 시간이 지났는데 오늘 기록이 없으면
     const now = nowTime(), d = db[today];
-    const empty = !d || (!d.cups.length && !METRICS.some(m => d[m.key] != null));
+    const empty = !hasData(d);
     const passed = list.filter(t => t <= now);
     $('rmBanner').hidden = !(passed.length && empty);
     if (passed.length && empty) $('rmMsg').textContent = `${fmtTime(passed[passed.length - 1])} 기록 알림 시간이 지났어요. 오늘 마신 커피와 상태를 기록해 볼까요?`;
   }
   setRmTime('21:00');
 
-  function render() { renderForm(); renderCal(); renderWeek(); renderMonth(); renderYear(); renderBackup(); renderRemind(); }
+  function render() { renderGoal(); renderForm(); renderCal(); renderWeek(); renderMonth(); renderYear(); renderBackup(); renderRemind(); }
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
   let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(render, 150); });
   renderLegend();
